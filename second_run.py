@@ -5,7 +5,9 @@ import cv2
 import keras
 import numpy as np
 import pandas as pd
-from keras.callbacks import (ModelCheckpoint, ReduceLROnPlateau, TensorBoard)
+from keras.models import load_model
+from keras.callbacks import (EarlyStopping, ModelCheckpoint, ReduceLROnPlateau,
+                             TensorBoard)
 from keras.metrics import (categorical_accuracy, categorical_crossentropy,
                            top_k_categorical_accuracy)
 from keras.optimizers import Adam
@@ -18,8 +20,8 @@ from common import *
 # Param world
 train_imgs = "./data/train/"
 test_imgs = "./data/test/"
-img_size = 224
-batch_size = 64
+img_size = 448
+batch_size = 16
 
 train = pd.read_csv("./data/train.csv")
 train = train.loc[train['Id'] != 'new_whale']
@@ -69,6 +71,7 @@ callbacks = [reduceLROnPlat, tensorboard, checkpoint]
 model = create_resnet50(img_size=img_size, num_classes=num_classes)
 model.compile(optimizer=Adam(lr=.005), loss='categorical_crossentropy',
               metrics=[categorical_crossentropy, categorical_accuracy, top_5_accuracy])
+model = load_model('path_to_checkpoint', custom_objects={'top_5_accuracy': top_5_accuracy})
 batches = gen.flow(x_train, y_train, batch_size=batch_size)
 val_batches = gen.flow(x_val, y_val, batch_size=batch_size)
 
