@@ -102,3 +102,15 @@ venv.bak/
 
 # mypy
 .mypy_cache/
+
+.DS_Store
+.ipynb_checkpoints
+node_modules
+*.swp
+.vscode/
+.idea/**
+*.pbxproj
+*.xcworkspacedata
+__pycache__
+*.pyc
+/tags
