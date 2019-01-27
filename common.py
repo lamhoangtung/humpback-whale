@@ -18,25 +18,24 @@ def top_5_accuracy(x, y):
     return t5
 
 
-def normalize_images(train_df, img_size):
+def preprocess_data(train_df, img_size):
     '''
     Convert to grayscale
-    Normalize image to 0 mean and unit variance
     '''
     im_arrays = []
     labels = []
     fs = {}  # dictionary with original size of each photo
     train_df = train_df.loc[train_df['Id'] != 'new_whale']
     d = {cat: k for k, cat in enumerate(train_df.Id.unique())}
-    for index, row in tqdm(train_df.iterrows(), total=train_df.shape[0]):
-        im = cv2.imread(os.path.join('./data/train/', row['Image']), 0)
-        norm_image = cv2.normalize(
-            im, None, alpha=0, beta=1, norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_32F)
-        new_image = cv2.resize(norm_image, (img_size, img_size))
-        new_image = np.reshape(new_image, [img_size, img_size, 1])
+    for index, row in tqdm(train_df.iterrows(), total=train_df.shape[0], desc='Preprocessing data'):
+        im = cv2.imread(os.path.join('./data/train/', row['Image']))
+        # norm_image = cv2.normalize(
+        #     im, None, alpha=0, beta=1, norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_32F)
+        new_image = cv2.resize(im, (img_size, img_size))
+        # new_image = np.reshape(new_image, [img_size, img_size, 3])
         im_arrays.append(new_image)
         labels.append(d[row['Id']])
-        fs[row['Image']] = norm_image.shape
+        fs[row['Image']] = im.shape
     train_ims = np.array(im_arrays)
     train_labels = np.array(labels)
     train_labels = keras.utils.to_categorical(train_labels)
@@ -47,7 +46,7 @@ def create_resnet50(img_size, num_classes):
     '''
     Create FastAI like ResNet50 based on radek work
     '''
-    base_model = ResNet50(include_top=False, weights=None, input_shape=(img_size, img_size, 1),
+    base_model = ResNet50(include_top=False, weights='imagenet', input_shape=(img_size, img_size, 3),
                           classes=num_classes)
     x = base_model.output
     x = AveragePooling2D()(x)
