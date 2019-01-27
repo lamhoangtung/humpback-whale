@@ -5,7 +5,6 @@ import cv2
 import keras
 import numpy as np
 import pandas as pd
-from keras.callbacks import (ModelCheckpoint, ReduceLROnPlateau, TensorBoard)
 from keras.metrics import (categorical_accuracy, categorical_crossentropy,
                            top_k_categorical_accuracy)
 from keras.optimizers import Adam
@@ -14,16 +13,10 @@ from sklearn.model_selection import train_test_split
 from tqdm import tqdm
 
 from common import *
+from config import *
 
-# Param world
-train_imgs = "./data/train/"
-test_imgs = "./data/test/"
 img_size = 224
 batch_size = 64
-
-train = pd.read_csv("./data/train.csv")
-train = train.loc[train['Id'] != 'new_whale']
-num_classes = len(train['Id'].unique())
 
 train_ims, train_labels = preprocess_data(train, img_size)
 
@@ -49,20 +42,6 @@ gen = ImageDataGenerator(zoom_range=0.2,
 batches = gen.flow(x_train, y_train, batch_size=batch_size)
 val_batches = gen.flow(x_val, y_val, batch_size=batch_size)
 
-# Callback for this run
-reduceLROnPlat = ReduceLROnPlateau(monitor='val_top_5_accuracy',
-                                   factor=0.50,
-                                   patience=3,
-                                   verbose=1,
-                                   mode='max',
-                                   min_delta=.001,
-                                   min_lr=1e-5
-                                   )
-
-tensorboard = TensorBoard(log_dir="logs/{}".format(time.time()),
-                          batch_size=batch_size, write_images=True)
-
-
 model = create_resnet50(img_size=img_size, num_classes=num_classes)
 
 # Train with freeze
@@ -71,19 +50,14 @@ for layer in model.layers[:-9]:
 model.compile(optimizer=Adam(lr=.005), loss='categorical_crossentropy',
               metrics=[categorical_crossentropy, categorical_accuracy, top_5_accuracy])
 
-weightpath = "/model/first-run-freeze-weights-{epoch:03d}-{top_5_accuracy:.3f}.hdf5"
-checkpoint = ModelCheckpoint(weightpath, monitor='val_loss', verbose=0,
-                             save_best_only=False, save_weights_only=False, mode='auto', period=1)
-callbacks = [reduceLROnPlat, tensorboard, checkpoint]
-
-
+weight_path = "/model/first-run-freeze-weights-{epoch:03d}-{top_5_accuracy:.3f}.hdf5"
 epochs = 14
 history = model.fit_generator(generator=batches,
                               steps_per_epoch=batches.n//batch_size,
                               epochs=epochs,
                               validation_data=val_batches,
                               validation_steps=val_batches.n//batch_size,
-                              callbacks=callbacks)
+                              callbacks=get_common_callback(batch_size, weight_path))
 
 # Unfreeze
 for layer in model.layers[-9:]:
@@ -91,15 +65,11 @@ for layer in model.layers[-9:]:
 model.compile(optimizer=Adam(lr=.005), loss='categorical_crossentropy',
               metrics=[categorical_crossentropy, categorical_accuracy, top_5_accuracy])
 
-weightpath = "/model/first-run-unfreeze-weights-{epoch:03d}-{top_5_accuracy:.3f}.hdf5"
-checkpoint = ModelCheckpoint(weightpath, monitor='val_loss', verbose=0,
-                             save_best_only=False, save_weights_only=False, mode='auto', period=1)
-callbacks = [reduceLROnPlat, tensorboard, checkpoint]
-
+weight_path = "/model/first-run-unfreeze-weights-{epoch:03d}-{top_5_accuracy:.3f}.hdf5"
 epochs = 24
 history = model.fit_generator(generator=batches,
                               steps_per_epoch=batches.n//batch_size,
                               epochs=epochs,
                               validation_data=val_batches,
                               validation_steps=val_batches.n//batch_size,
-                              callbacks=callbacks)
+                              callbacks=get_common_callback(batch_size, weight_path))
