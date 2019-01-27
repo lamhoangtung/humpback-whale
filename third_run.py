@@ -5,10 +5,10 @@ import cv2
 import keras
 import numpy as np
 import pandas as pd
-from keras.models import load_model
-from keras.callbacks import (ModelCheckpoint, ReduceLROnPlateau, TensorBoard)
+from keras.callbacks import ModelCheckpoint, ReduceLROnPlateau, TensorBoard
 from keras.metrics import (categorical_accuracy, categorical_crossentropy,
                            top_k_categorical_accuracy)
+from keras.models import load_model
 from keras.optimizers import Adam
 from keras.preprocessing.image import ImageDataGenerator
 from sklearn.model_selection import train_test_split
@@ -16,7 +16,6 @@ from tqdm import tqdm
 
 from common import *
 from config import *
-
 
 img_size = 448
 batch_size = 16
