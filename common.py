@@ -12,7 +12,7 @@ from keras.metrics import top_k_categorical_accuracy
 from keras.models import Model
 from keras.preprocessing.image import ImageDataGenerator
 from tqdm import tqdm
-
+import time
 from config import *
 
 def top_5_accuracy(x, y):
