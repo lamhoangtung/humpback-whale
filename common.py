@@ -22,11 +22,12 @@ def top_5_accuracy(x, y):
     t5 = top_k_categorical_accuracy(x, y, 5)
     return t5
 
-im_arrays = []
-labels = []
-fs = {}
+manager = multiprocessing.Manager()
+im_arrays = manager.list()
+labels = manager.list()
+fs = manager.dict()
+d = manager.dict()
 image_size = 0
-d = {}
 
 def preprocess_image(rows):
     global im_arrays, labels, fs
