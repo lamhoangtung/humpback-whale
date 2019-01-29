@@ -1,3 +1,4 @@
+import multiprocessing
 import os
 import time
 
@@ -16,49 +17,54 @@ from tqdm import tqdm
 
 from config import *
 
-import multiprocessing
 
 def top_5_accuracy(x, y):
     t5 = top_k_categorical_accuracy(x, y, 5)
     return t5
 
+
 manager = multiprocessing.Manager()
 im_arrays = manager.list()
 labels = manager.list()
-fs = manager.dict()
+# fs = manager.dict()
 d = manager.dict()
 image_size = 0
 
+
 def preprocess_image(rows):
-    global im_arrays, labels, fs
+    global im_arrays, labels
     index, row = rows
     im = cv2.imread(os.path.join(train_imgs, row['Image']))
     new_image = cv2.resize(im, (image_size, image_size))
     im_arrays.append(new_image)
     labels.append(d[row['Id']])
-    fs[row['Image']] = im.shape
+    # fs[row['Image']] = im.shape
 
-def preprocess_data(train_df, img_size):
+
+def preprocess_data(train_df, img_size, desc):
     '''
     Convert to grayscale
     '''
-    global image_size, fs, d
+    global image_size, d, im_arrays, labels
     image_size = img_size
     train_df = train_df.loc[train_df['Id'] != 'new_whale']
     d = {cat: k for k, cat in enumerate(train_df.Id.unique())}
-    
+
     all_rows = train_df.iterrows()
     pool = multiprocessing.Pool(num_worker)
     for _ in tqdm(
         pool.imap(preprocess_image, all_rows),
         total=train_df.shape[0],
-        desc='Preprocessing data'
+        desc=desc
     ):
         pass
     pool.terminate()
     train_ims = np.array(im_arrays)
     train_labels = np.array(labels)
     train_labels = keras.utils.to_categorical(train_labels)
+    im_arrays[:] = []
+    labels[:] = []
+    d = {}
     return train_ims, train_labels
 
 
@@ -100,3 +106,21 @@ def get_common_callback(batch_size, weight_path):
                                  save_best_only=False, save_weights_only=False, mode='auto', period=1)
     callbacks = [reduceLROnPlat, tensorboard, checkpoint]
     return callbacks
+
+
+def get_data_generator(img_size, batch_size):
+    x_train, y_train = preprocess_data(train, img_size, "Preprocess trainset")
+    x_val, y_val = preprocess_data(val, image_size, "Preprocess testset")
+    print('Train shape:', x_train.shape, y_train.shape)
+    print('Val shape:', x_val.shape, y_val.shape)
+    # Generator with augmentation
+    gen = ImageDataGenerator(zoom_range=0.2,
+                             horizontal_flip=True,
+                             vertical_flip=False,
+                             rotation_range=10,
+                             brightness_range=(0, 0.2),
+                             shear_range=15
+                             )
+    batches = gen.flow(x_train, y_train, batch_size=batch_size)
+    val_batches = gen.flow(x_val, y_val, batch_size=batch_size)
+    return batches, val_batches
