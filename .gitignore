@@ -116,3 +116,4 @@ __pycache__
 /tags
 data/train/
 data/test/
+logs/
