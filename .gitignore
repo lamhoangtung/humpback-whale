@@ -114,4 +114,5 @@ node_modules
 __pycache__
 *.pyc
 /tags
-data/
+data/train/
+data/test/
