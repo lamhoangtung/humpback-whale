@@ -15,6 +15,9 @@ num_worker = 20
 train = pd.read_csv(custom_train_csv)
 train = train.loc[train['Id'] != 'new_whale']
 
+train_oversample = pd.read_csv(oversampled_csv)
+train_oversample = train_oversample.loc[train_oversample['Id'] != 'new_whale']
+
 val = pd.read_csv(custom_test_csv)
 val = val.loc[train['Id'] != 'new_whale']
 

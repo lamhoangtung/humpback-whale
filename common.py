@@ -108,8 +108,11 @@ def get_common_callback(batch_size, weight_path):
     return callbacks
 
 
-def get_data_generator(img_size, batch_size):
-    x_train, y_train = preprocess_data(train, img_size, "Preprocess trainset")
+def get_data_generator(img_size, batch_size, oversample=False):
+    if not oversample:
+        x_train, y_train = preprocess_data(train, img_size, "Preprocess trainset")
+    else:
+        x_train, y_train = preprocess_data(train_oversample, img_size, "Preprocess trainset")
     x_val, y_val = preprocess_data(val, image_size, "Preprocess testset")
     print('Train shape:', x_train.shape, y_train.shape)
     print('Val shape:', x_val.shape, y_val.shape)
