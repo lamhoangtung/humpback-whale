@@ -127,3 +127,22 @@ def get_data_generator(img_size, batch_size, oversample=False):
     batches = gen.flow(x_train, y_train, batch_size=batch_size)
     val_batches = gen.flow(x_val, y_val, batch_size=batch_size)
     return batches, val_batches
+
+
+def top_5_preds(preds): return np.argsort(preds.numpy())[:, ::-1][:, :5]
+
+
+def top_5_pred_labels(preds, classes):
+    top_5 = top_5_preds(preds)
+    labels = []
+    for i in range(top_5.shape[0]):
+        labels.append(' '.join([classes[idx] for idx in top_5[i]]))
+    return labels
+
+
+def create_submission(preds, data, name, classes=None):
+    if not classes:
+        classes = data.classes
+    sub = pd.DataFrame({'Image': [path.name for path in data.test_ds.x.items]})
+    sub['Id'] = top_5_pred_labels(preds, classes)
+    sub.to_csv(f'subs/{name}.csv', index=False)
