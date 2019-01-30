@@ -134,10 +134,10 @@ def top_5_preds(preds): return np.argsort(preds.numpy())[:, ::-1][:, :5]
 
 def top_5_pred_labels(preds, classes):
     top_5 = top_5_preds(preds)
-    labels = []
+    predicted_labels = []
     for i in range(top_5.shape[0]):
-        labels.append(' '.join([classes[idx] for idx in top_5[i]]))
-    return labels
+        predicted_labels.append(' '.join([classes[idx] for idx in top_5[i]]))
+    return predicted_labels
 
 
 def create_submission(preds, data, name, classes=None):
