@@ -68,11 +68,11 @@ def preprocess_data(train_df, img_size, desc):
     return train_ims, train_labels
 
 
-def create_resnet50(img_size, num_classes):
+def create_resnet50(num_classes):
     '''
     Create FastAI like ResNet50 based on radek work
     '''
-    base_model = ResNet50(include_top=False, weights='imagenet', input_shape=(img_size, img_size, 3),
+    base_model = ResNet50(include_top=False, weights='imagenet', input_shape=(None, None, 3),
                           classes=num_classes)
     x = base_model.output
     x = GlobalAveragePooling2D()(x)

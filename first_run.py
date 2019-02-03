@@ -18,7 +18,7 @@ batch_size = 64
 
 batches, val_batches = get_data_generator(img_size, batch_size)
 
-model = create_resnet50(img_size=img_size, num_classes=num_classes)
+model = create_resnet50(num_classes=num_classes)
 
 # Train with freeze
 for layer in model.layers[:-9]:
@@ -26,8 +26,8 @@ for layer in model.layers[:-9]:
 model.compile(optimizer=Adam(lr=.005), loss='categorical_crossentropy',
               metrics=[categorical_crossentropy, categorical_accuracy, top_5_accuracy])
 
-weight_path = "/model/first-run-freeze-weights-{epoch:03d}-{top_5_accuracy:.3f}.hdf5"
-epochs = 14
+weight_path = "model/first-run-freeze-weights-{epoch:03d}-{top_5_accuracy:.3f}.hdf5"
+epochs = 20
 history = model.fit_generator(generator=batches,
                               steps_per_epoch=batches.n//batch_size,
                               epochs=epochs,
@@ -41,8 +41,8 @@ for layer in model.layers[-9:]:
 model.compile(optimizer=Adam(lr=.005), loss='categorical_crossentropy',
               metrics=[categorical_crossentropy, categorical_accuracy, top_5_accuracy])
 
-weight_path = "/model/first-run-unfreeze-weights-{epoch:03d}-{top_5_accuracy:.3f}.hdf5"
-epochs = 24
+weight_path = "model/first-run-unfreeze-weights-{epoch:03d}-{top_5_accuracy:.3f}.hdf5"
+epochs = 40
 history = model.fit_generator(generator=batches,
                               steps_per_epoch=batches.n//batch_size,
                               epochs=epochs,

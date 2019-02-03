@@ -19,8 +19,7 @@ batch_size = 16
 
 batches, val_batches = get_data_generator(img_size, batch_size, oversample=True)
 
-model = create_resnet50(img_size=img_size, num_classes=num_classes)
-model = load_model('path_to_checkpoint', custom_objects={
+model = load_model('model/path/to/last/checkpoint', custom_objects={
                    'top_5_accuracy': top_5_accuracy})
 
 # Train with freeze

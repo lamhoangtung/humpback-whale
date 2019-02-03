@@ -19,8 +19,7 @@ batch_size = 16
 
 batches, val_batches = get_data_generator(img_size, batch_size)
 
-model = create_resnet50(img_size=img_size, num_classes=num_classes)
-model = load_model('path_to_checkpoint', custom_objects={
+model = load_model('model/first-run-unfreeze-weights-040-0.921.hdf5', custom_objects={
                    'top_5_accuracy': top_5_accuracy})
 
 # Train with freeze
@@ -29,7 +28,7 @@ for layer in model.layers[:-9]:
 model.compile(optimizer=Adam(lr=.005), loss='categorical_crossentropy',
               metrics=[categorical_crossentropy, categorical_accuracy, top_5_accuracy])
 
-weight_path = "/model/second-run-freeze-weights-{epoch:03d}-{top_5_accuracy:.3f}.hdf5"
+weight_path = "model/second-run-freeze-weights-{epoch:03d}-{top_5_accuracy:.3f}.hdf5"
 epochs = 12
 history = model.fit_generator(generator=batches,
                               steps_per_epoch=batches.n//batch_size,
@@ -44,7 +43,7 @@ for layer in model.layers[-9:]:
 model.compile(optimizer=Adam(lr=.005), loss='categorical_crossentropy',
               metrics=[categorical_crossentropy, categorical_accuracy, top_5_accuracy])
 
-weightpath = "/model/second-run-unfreeze-weights-{epoch:03d}-{top_5_accuracy:.3f}.hdf5"
+weightpath = "model/second-run-unfreeze-weights-{epoch:03d}-{top_5_accuracy:.3f}.hdf5"
 epochs = 22
 history = model.fit_generator(generator=batches,
                               steps_per_epoch=batches.n//batch_size,
