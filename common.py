@@ -8,8 +8,8 @@ import numpy as np
 import pandas as pd
 from keras.applications import ResNet50
 from keras.callbacks import ModelCheckpoint, ReduceLROnPlateau, TensorBoard
-from keras.layers import (Activation, AveragePooling2D, BatchNormalization,
-                          Conv2D, Dense, Dropout, Flatten, MaxPooling2D)
+from keras.layers import (Activation, GlobalAveragePooling2D, BatchNormalization,
+                          Conv2D, Dense, Dropout)
 from keras.metrics import top_k_categorical_accuracy
 from keras.models import Model
 from keras.preprocessing.image import ImageDataGenerator
@@ -75,15 +75,13 @@ def create_resnet50(img_size, num_classes):
     base_model = ResNet50(include_top=False, weights='imagenet', input_shape=(img_size, img_size, 3),
                           classes=num_classes)
     x = base_model.output
-    x = AveragePooling2D()(x)
-    x = MaxPooling2D((2, 2))(x)
-    x = Flatten()(x)
+    x = GlobalAveragePooling2D()(x)
     x = BatchNormalization(axis=1)(x)
     x = Dropout(0.25)(x)
     x = Dense(2048, activation='relu')(x)
     x = BatchNormalization(axis=1)(x)
     x = Dropout(0.25)(x)
-    predictions = Dense(5004, activation='softmax')(x)
+    predictions = Dense(num_classes, activation='softmax')(x)
     model = Model(inputs=base_model.input, outputs=predictions)
     print(model.summary())
     return model
