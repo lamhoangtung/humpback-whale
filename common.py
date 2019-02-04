@@ -23,42 +23,38 @@ def top_5_accuracy(x, y):
     return t5
 
 
-manager = multiprocessing.Manager()
-im_arrays = manager.list()
-labels = manager.list()
-# fs = manager.dict()
-d = manager.dict()
 image_size = 0
 
 
 def preprocess_image(rows):
-    global im_arrays, labels
     index, row = rows
-    im = cv2.imread(os.path.join(train_imgs, row['Image']))
-    new_image = cv2.resize(im, (image_size, image_size))
-    im_arrays.append(new_image)
-    labels.append(d[row['Id']])
-    # fs[row['Image']] = im.shape
+    img = cv2.imread(os.path.join(train_imgs, row['Image']))
+    new_image = cv2.resize(img, (image_size, image_size))
+    return (new_image, row['Id'], row['Image'])
 
 
 def preprocess_data(train_df, img_size, desc):
     '''
     Convert to grayscale
     '''
-    global image_size, d, im_arrays, labels
+    global image_size
     image_size = img_size
     train_df = train_df.loc[train_df['Id'] != 'new_whale']
-    d = {cat: k for k, cat in enumerate(train_df.Id.unique())}
 
     all_rows = train_df.iterrows()
     pool = multiprocessing.Pool(num_worker)
-    for _ in tqdm(
-        pool.imap(preprocess_image, all_rows),
-        total=train_df.shape[0],
-        desc=desc
-    ):
-        pass
+    data = list(tqdm(pool.imap(preprocess_image, all_rows),
+                total=train_df.shape[0],
+                desc=desc))
     pool.terminate()
+    im_arrays = [sample[0] for sample in data]
+    labels = [sample[1] for sample in data]
+    im_name = [sample[2] for sample in data]
+    
+    for index, img in enumerate(im_arrays[:10]):
+        cv2.imwrite(im_name[index], img)
+        print(im_name[index],':',labels[index])
+    print('Done debug')
     train_ims = np.array(im_arrays)
     train_labels = np.array(labels)
     train_labels = keras.utils.to_categorical(train_labels)
