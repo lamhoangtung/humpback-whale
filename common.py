@@ -13,6 +13,7 @@ from keras.layers import (Activation, GlobalAveragePooling2D, BatchNormalization
 from keras.metrics import top_k_categorical_accuracy
 from keras.models import Model
 from keras.preprocessing.image import ImageDataGenerator
+from keras.utils import multi_gpu_model
 from tqdm import tqdm
 
 from config import *
@@ -66,6 +67,7 @@ def create_resnet50(num_classes):
     predictions = Dense(num_classes, activation='softmax')(x)
     model = Model(inputs=base_model.input, outputs=predictions)
     print(model.summary())
+    model = multi_gpu_model(model, gpus=num_gpus)
     return model
 
 
