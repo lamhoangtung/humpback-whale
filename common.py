@@ -67,7 +67,7 @@ def create_resnet50(num_classes):
     predictions = Dense(num_classes, activation='softmax')(x)
     model = Model(inputs=base_model.input, outputs=predictions)
     print(model.summary())
-    model = multi_gpu_model(model, gpus=num_gpus)
+    # model = multi_gpu_model(model, gpus=num_gpus)
     return model
 
 
@@ -98,6 +98,13 @@ def get_data_generator(img_size, batch_size, oversample=False):
     x_val, y_val = preprocess_data(val, image_size, "Preprocess testset")
     print('Train shape:', x_train.shape, y_train.shape)
     print('Val shape:', x_val.shape, y_val.shape)
+
+    from sklearn.utils import class_weight
+    y_ints = [y.argmax() for y in y_train]
+    class_weights = class_weight.compute_class_weight('balanced',
+                                                      np.unique(y_ints),
+                                                      y_ints)
+
     # Generator with augmentation
     gen = ImageDataGenerator(zoom_range=0.2,
                              horizontal_flip=True,
@@ -108,7 +115,7 @@ def get_data_generator(img_size, batch_size, oversample=False):
                              )
     batches = gen.flow(x_train, y_train, batch_size=batch_size)
     val_batches = gen.flow(x_val, y_val, batch_size=batch_size)
-    return batches, val_batches
+    return batches, val_batches, class_weights
 
 
 def top_5_preds(preds): return np.argsort(preds.numpy())[:, ::-1][:, :5]
