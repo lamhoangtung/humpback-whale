@@ -1,9 +1,9 @@
 import pandas as pd
 
 # Param world
-train_imgs = "/media/asilla/data102/hana/whale_pure/train/"
-test_imgs = "/media/asilla/data102/hana/whale_pure/test/"
-train_csv = "/media/asilla/data102/hana/whale_pure/train.csv"
+train_imgs = "./data/train/"
+test_imgs = "./data/test/"
+train_csv = "./data/train.csv"
 
 # Splited csv
 custom_train_csv = "./data/custom_train.csv"

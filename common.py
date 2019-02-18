@@ -45,6 +45,10 @@ def preprocess_data(train_df, img_size, desc):
                 total=train_df.shape[0],
                 desc=desc))
     pool.terminate()
+
+    import pdb
+    pdb.set_trace()
+
     train_ims = np.array([sample[0] for sample in processed_data])
     train_labels = keras.utils.to_categorical(
         np.array([sample[1] for sample in processed_data]))
